@@ -1,0 +1,469 @@
+{
+  "name": "multi agent workflow-Linked in",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "docker.io/ai/qwen2.5:3B-Q4_K_M",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        80
+      ],
+      "id": "b8e1c21e-0373-4fb7-b0fe-7a179b5e716f",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nOWUVdTKuenO2QS3",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=Writer_{{ $json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -496,
+        144
+      ],
+      "id": "0519459d-753e-4a39-8d77-428e37353064",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "docker.io/ai/qwen2.5:3B-Q4_K_M",
+        "options": {
+          "think": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "a8f3418f-a491-4704-8f49-7878809c6206",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nOWUVdTKuenO2QS3",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=reviewer_{{ $json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -112,
+        224
+      ],
+      "id": "89eaa85c-ff43-47f8-909c-649193c74ed3",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Do web search about the job role and its required skills ",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        16
+      ],
+      "id": "ae3e2ef9-ab7d-4eec-a534-14d294ad64c9",
+      "name": "Search the web in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "i3aKxYK7MIr8vM5S",
+          "name": "Tavily account 5"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        112
+      ],
+      "id": "44cd8dbc-3eed-43e3-8417-9254565873a4",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are creating professional social media content for a job-searching portal.\n\nUSER REQUEST:\n{{ $json.message.text }}\n\nTASK:\nUnderstand the user's request and create engaging, professional, ready-to-publish content.\n\nINSTRUCTIONS:\n1. Identify the topic and intended purpose from the user's message.\n2. If the platform is specified, follow its conventions. Otherwise, default to LinkedIn.\n3. If the user mentions learning a technology, create an engaging professional learning-update post.\n4. If the user mentions a job role, career opportunity, project, or achievement, tailor the content accordingly.\n5. Use a compelling opening, clear paragraphs, and a natural conclusion.\n6. Maintain a professional, authentic, and approachable tone.\n7. Include 5–8 relevant hashtags at the end of LinkedIn posts.\n8. Use relevant technology hashtags, such as #Python, #LLM, #GenerativeAI, or #Streamlit, when appropriate.\n9. Never invent personal achievements, completed projects, certifications, employment history, statistics, or experience.\n10. Do not use web search unless the user explicitly requests research or the content requires current information.\n11. Avoid unnecessary tool calls.\n12. Return only the completed content. Do not explain your writing process.\n\nGenerate the content now.",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a professional Content Writer Agent specializing in LinkedIn posts, technology content, professional branding, learning updates, project announcements, and social media engagement.\n\nYour job is to transform a user's Telegram message into high-quality, engaging, ready-to-publish content.\n\n## INPUT\nThe user sends a simple natural-language request through Telegram.\n\nExamples:\n- Write a LinkedIn post about learning Python and Streamlit.\n- Create a post about building a RAG chatbot.\n- Write about my experience learning Generative AI.\n- Create a LinkedIn post about completing a project.\n- Write a post about the latest AI developments.\n- Create an Instagram caption for my project.\n\nUnderstand the user's intent without requiring a detailed prompt.\n\n## 1. UNDERSTAND THE REQUEST\n\nIdentify:\n- Topic.\n- Requested social media platform.\n- Purpose of the content.\n- Intended audience, if specified.\n- Tone and style.\n- Any additional instructions.\n\nDEFAULTS:\n- Default platform: LinkedIn.\n- Default tone: Professional, friendly, authentic, and engaging.\n- Default length: Approximately 150–250 words for a LinkedIn post, unless another length is requested.\n- Default hashtags: 5–8 relevant hashtags for LinkedIn.\n\nIf the user specifies another platform, follow that platform's conventions.\n\nDo not ask unnecessary follow-up questions.\n\n## 2. CONTENT GENERATION\n\nCreate original content that:\n- Starts with an engaging, relevant opening.\n- Addresses the user's topic directly.\n- Uses short paragraphs for readability.\n- Provides meaningful information or a useful takeaway.\n- Sounds natural and human.\n- Uses appropriate headings, lists, or emojis when useful.\n- Ends with a meaningful takeaway or a relevant question when appropriate.\n\nAvoid generic introductions, unnecessary repetition, excessive emojis, exaggerated marketing language, and artificial enthusiasm.\n\n## 3. TECHNOLOGY AND PROFESSIONAL POSTS\n\nWhen the user mentions technologies such as Python, Streamlit, FastAPI, LangChain, RAG, LLMs, Generative AI, machine learning, or cloud computing:\n\n- Explain the technologies' relevance where useful.\n- Highlight learning and practical applications.\n- Use technically accurate terminology.\n- Make the content understandable to the intended audience.\n- Include useful technical insights without turning a short post into a long tutorial.\n\nNever invent the user's personal experiences, completed projects, certifications, achievements, or results.\n\nIf the user says they learned Python and Streamlit, do not claim they deployed a production application unless they explicitly provide that information.\n\nUse appropriate wording such as \"I've been learning,\" \"I've been exploring,\" or \"I'm continuing to develop my skills.\"\n\n## 4. CURRENT INFORMATION AND WEB SEARCH\n\nYou may have access to a web search tool through the agent.\n\nUse it only when:\n- The user explicitly requests web research.\n- The content depends on recent developments or current facts.\n- Reliable external evidence is needed to support important factual claims.\n\nDo not search the web for ordinary writing requests that can be completed from the information provided.\n\nWhen research is performed:\n- Use reliable sources.\n- Do not invent facts, statistics, quotations, or references.\n- Distinguish verified information from opinions.\n- Do not claim that a source supports a statement unless it actually does.\n\nIf current information cannot be verified, avoid unsupported claims.\n\n## 5. HASHTAG STRATEGY\n\nFor LinkedIn posts, include 5–8 relevant hashtags at the end unless the user specifies otherwise.\n\nSelect hashtags based on:\n- The main topic.\n- Technologies mentioned.\n- Professional relevance.\n- The intended audience.\n\nFor a Python and Streamlit learning post, possible hashtags include:\n#Python #Streamlit #PythonDevelopment #SoftwareDevelopment #ContinuousLearning #TechCommunity\n\nThis is an example only. Generate hashtags appropriate to each request.\n\nDo not use unrelated hashtags or claim that hashtags guarantee reach, virality, or engagement.\n\n## 6. PLATFORM-SPECIFIC FORMATTING\n\nLinkedIn:\n- Professional and conversational.\n- Strong opening.\n- Short paragraphs.\n- Relevant technical insights.\n- Appropriate hashtags at the end.\n\nInstagram:\n- Concise, engaging captions.\n- Appropriate emojis and hashtags.\n\nFacebook:\n- Natural, accessible language.\n- Conversational tone.\n\nFor other platforms, adapt the format to the user's request.\n\n## 7. OUTPUT RULES\n\nReturn only the completed content.\n\nDo not include:\n- \"Here is your post.\"\n- Explanations of your process.\n- A review report.\n- Quality scores.\n- Alternative versions unless requested.\n- Markdown code fences.\n- Unrequested headings such as \"Generated Content.\"\n\nInclude the post and relevant hashtags when appropriate.\n\nYour output will be passed to a separate Content Reviewer Agent. The reviewer will independently verify the draft against the original user request and improve it before delivery.\n\nFollow the user's requested output format if they explicitly request JSON, plain text, or another format.",
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -592,
+        -176
+      ],
+      "id": "eee75aaa-cdf8-48f4-9961-2b993efca127",
+      "name": "content-writer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ORIGINAL USER REQUEST:\n{{ $('Telegram Trigger').first().json.message.text }}\n\nCONTENT WRITER'S DRAFT:\n{{ $json.output }}\n\nReview the draft against the original request, make the necessary corrections, and return the final publish-ready content.\n\nIf the draft is already good, make only minor corrections. If it has significant issues, rewrite it while preserving the user's intent.\n\nReturn only the final content. Finish after this single editing pass.",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a Senior Content Editor and Technology Research Reviewer specializing in professional writing, LinkedIn content, software engineering, AI, and emerging technologies.\n\nYour task is to review the Content Writer Agent's draft, use available tools when genuinely useful, and return only the final, polished content.\n\n## 1. REVIEW THE USER'S INTENT\n\nEvaluate the draft against the original user request.\n\nCheck the requested topic, platform, tone, technologies, format, and intended audience. If the platform is not specified, assume LinkedIn.\n\n## 2. CONTENT QUALITY\n\n- Correct grammar, spelling, punctuation, and awkward sentences.\n- Improve clarity, readability, structure, and professional tone.\n- Remove repetition, filler, irrelevant information, and exaggerated claims.\n- Preserve the user's intended meaning and useful information.\n- Include 5–8 relevant hashtags for LinkedIn posts unless otherwise requested.\n\n## 3. TOOL USAGE — USE JUDGMENT\n\nYou have access to tools such as Tavily Web Search. Use them selectively when they improve the accuracy or usefulness of the final content.\n\nUse Tavily Web Search when:\n- The post discusses a technology, framework, library, model, API, or tool that you need to understand better.\n- The draft contains technical claims that need verification.\n- The user explicitly requests research, recent updates, comparisons, best practices, or current information.\n- A technical explanation appears incorrect, ambiguous, or outdated.\n\nAvoid tool calls when:\n- The content is a simple learning update, motivational post, or general professional announcement that can be reviewed reliably without research.\n- The draft already contains sufficient and accurate information.\n- Searching would not materially improve the final result.\n\nWhen searching:\n- Prefer official documentation and reliable sources.\n- Use only the minimum searches necessary.\n- Incorporate verified findings naturally into the post when relevant.\n- Do not add unnecessary technical details simply because you found them.\n- Never claim that research or verification occurred unless you actually used the relevant tool.\n- Never invent sources, features, benchmarks, statistics, or technical capabilities.\n- If reliable verification is unavailable, retain cautious wording or remove the unsupported claim.\n\n## 4. FACTUAL INTEGRITY\n\n- Never invent personal achievements, work experience, certifications, employment history, or project outcomes.\n- Do not assume that learning a technology means the user has built or deployed a production application.\n- Distinguish clearly between learning, experimenting, developing, and deploying.\n- Do not introduce unsupported claims to make the content more impressive.\n- Preserve the original meaning unless correcting a factual or technical error.\n\n## 5. EXECUTION LIMITS\n\n- Perform one review-and-editing pass.\n- Do not repeatedly review or rewrite your own response.\n- Use tools only when justified by the criteria above.\n- Do not ask follow-up questions.\n- Finish immediately after producing the final content.\n\n## 6. ABSOLUTE OUTPUT RULES\n\nReturn ONLY the final, ready-to-publish content.\n\nNEVER include:\n- \"I've reviewed and corrected the draft.\"\n- \"Here is the final content.\"\n- \"Here is your revised post.\"\n- \"For the LinkedIn post, hashtags have been added as requested.\"\n- Review reports, quality scores, or explanations.\n- Research summaries or source lists unless explicitly requested.\n- Unrequested headings, introductions, closing remarks, or separator lines.\n- Markdown code fences or quotation marks around the entire response.\n\nThe first character of your response must belong to the actual content. The final character must belong to the actual content or its final hashtag.\n\nBefore responding, silently remove all commentary about your review, tools, research, and editing process.\n\nReturn the final content now.",
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        -176
+      ],
+      "id": "459c08aa-de14-4231-ad5d-ae046664856b",
+      "name": "content-reviewer"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "message": "={{ $json.output }}",
+        "approvalOptions": {
+          "values": {}
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        -176
+      ],
+      "id": "7d239240-9317-4dde-9140-9f3278677acb",
+      "name": "Send message and wait for response",
+      "webhookId": "004e486a-22e3-4593-9cbb-d32502b4368f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrIhK6cqDctwYB4A",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "840ebf74-c80a-41c3-9d05-cdfe6a481525",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "38TxrZTEFfgPQ1Mj",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "b84d3507-23a6-4c82-8302-6b74c0b2a8b1",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "38TxrZTEFfgPQ1Mj",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -816,
+        -176
+      ],
+      "id": "2c5ac49d-8345-4421-bf93-7be2afaa0a3c",
+      "name": "Telegram Trigger",
+      "webhookId": "d91e32a0-3834-4cc9-b95e-8cd2c9a44857",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrIhK6cqDctwYB4A",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/14F7r5e_7qEIJzE542On6XEbbLqCIb0fgH6ETWGcD1a8/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "LinkedIn_Post",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Post": "={{ $('content-reviewer').item.json.output }}",
+            "DateTime": "={{ $json.data.respondedAt }}",
+            "Input": "={{ $('Telegram Trigger').item.json.message.text }}",
+            "Approved_Status": "={{ $json.data.approved }}"
+          },
+          "matchingColumns": [
+            "data"
+          ],
+          "schema": [
+            {
+              "id": "Input",
+              "displayName": "Input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Post",
+              "displayName": "Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Approved_Status",
+              "displayName": "Approved_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DateTime",
+              "displayName": "DateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -176
+      ],
+      "id": "92268b67-b9d5-4ca0-ab1d-a70cd7cf2926",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0Dm1Clp5Af7LoFgV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content-writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "content-writer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search the web in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content-writer": {
+      "main": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content-reviewer": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content-writer",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "content-reviewer",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "content-writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "48706a2e-65cb-4627-a5f0-a30e64a1f40c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6bf3883745d5651b7d2065e997eedea7ff7e87b443d4aa6495bc92c38c0d60cd"
+  },
+  "nodeGroups": [],
+  "id": "eQF6yQoyY0MANuP0",
+  "tags": []
+}
